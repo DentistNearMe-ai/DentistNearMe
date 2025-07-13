@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import { Button } from '@qwikifiers/qwik-ui/styled';
 
 export default component$(() => {
   return (
@@ -7,6 +8,7 @@ export default component$(() => {
       <h1 class="text-3xl font-bold underline">
       Hello World!
     </h1>
+      <Button onClick$={() => alert('Hi!')}>Click Me</Button>
 
     </>
   );
