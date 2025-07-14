@@ -5,6 +5,7 @@ import v2Router from './routers/v2/index.router';
 import { appErrorHandler, genericErrorHandler } from './middlewares/error.middleware';
 import logger from './config/logger.config';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
+import { posthog } from './posthog';
 const app = express();
 
 app.use(express.json());
@@ -12,6 +13,11 @@ app.use(express.json());
 /**
  * Registering all the routers and their corresponding routes with out app server object.
  */
+app.use((req, res, next) => {
+    const userId = req.headers['x-user-id'];
+    if (userId) posthog.identify({ distinctId: userId });
+    next();
+  });
 
 app.use(attachCorrelationIdMiddleware);
 app.use('/api/v1', v1Router);
