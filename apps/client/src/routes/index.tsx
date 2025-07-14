@@ -7,8 +7,19 @@ import { Features } from '../components/sections/features';
 import { TrustSection } from '../components/sections/trust-section';
 import { CTASection } from '../components/sections/cta-section';
 import { Footer } from '../components/footer/footer';
+import { useVisibleTask$ } from '@builder.io/qwik';
+import { usePostHog } from '~/lib/analytics';
+
 
 export default component$(() => {
+  usePostHog();
+
+  useVisibleTask$(() => {
+    // Example: Track a page visit
+    import('posthog-js').then(({ default: posthog }) => {
+      posthog.capture('Visited landing page');
+    });
+  });
   return (
     <div class="min-h-screen bg-white">
       <Header />

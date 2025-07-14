@@ -1,0 +1,39 @@
+
+
+services:
+  posthog:
+    image: posthog/posthog:latest
+    env_file:
+      - .env
+    ports:
+      - "8010:8000"      # HTTP web/API
+    depends_on:
+      - clickhouse
+      - redis
+      - postgres
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.3
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+  redis:
+    image: redis:6
+    volumes:
+      - redis_data:/data
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-posthog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-posthog}
+      POSTGRES_DB: ${POSTGRES_DB:-posthog}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  clickhouse_data:
+  redis_data:
+  postgres_data:
