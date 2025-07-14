@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8010:8000"      # HTTP web/API
+      - "8000:8000"      # HTTP web/API
     depends_on:
       - clickhouse
       - redis
@@ -16,6 +16,8 @@ services:
     image: clickhouse/clickhouse-server:23.3
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+    ports:
+      - "8123:8123"    # expose HTTP API for PostHog  
 
   redis:
     image: redis:6
