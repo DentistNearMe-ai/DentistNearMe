@@ -6,7 +6,12 @@ import { appErrorHandler, genericErrorHandler } from './middlewares/error.middle
 import logger from './config/logger.config';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import { posthog } from './posthog';
+import { initDB } from './config/db';
+
 const app = express();
+
+// Initialize database connection
+initDB();
 
 app.use(express.json());
 
