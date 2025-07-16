@@ -10,16 +10,17 @@ import { Footer } from '../components/footer/footer';
 import { useVisibleTask$ } from '@builder.io/qwik';
 import { usePostHog } from '~/lib/analytics';
 
-
 export default component$(() => {
   usePostHog();
 
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     // Example: Track a page visit
     import('posthog-js').then(({ default: posthog }) => {
       posthog.capture('Visited landing page');
     });
   });
+  
   return (
     <div class="min-h-screen bg-white">
       <Header />
@@ -81,8 +82,8 @@ export const head: DocumentHead = {
   ],
   scripts: [
     {
-      type: "application/ld+json",
-      script: JSON.stringify({
+      // Remove the 'type' property - Qwik handles JSON-LD differently
+      script: `{
         "@context": "https://schema.org",
         "@type": "MedicalBusiness",
         "name": "DentalCare+",
@@ -99,7 +100,10 @@ export const head: DocumentHead = {
           "ratingValue": "4.9",
           "reviewCount": "10000"
         }
-      })
+      }`,
+      props: {
+        type: "application/ld+json"
+      }
     }
   ]
 };
