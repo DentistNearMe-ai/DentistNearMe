@@ -8,14 +8,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    turbo: {
-      rules: {
-        '*.tsx': {
-          loaders: ['@vercel/webpack-loader'],
-        },
-      },
-    },
+    experimental: {
+    // ← turns OFF Turbopack everywhere (dev + build)
+    turbo: false
   },
 };
 
