@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { Patient, IPatient } from '../models';
+import { IPatient } from '../models';
+import { PatientService } from '../services';
 import logger from '../config/logger.config';
 
 export class PatientController {
@@ -10,24 +11,11 @@ export class PatientController {
     try {
       const patientData: Partial<IPatient> = req.body;
       
-      // Check if patient already exists
-      const existingPatient = await Patient.findOne({ email: patientData.email });
-      if (existingPatient) {
-        return res.status(400).json({
-          success: false,
-          message: 'Patient with this email already exists'
-        });
-      }
-
-      // Create new patient
-      const patient = new Patient(patientData);
-      await patient.save();
+      const patient = await PatientService.createPatient(patientData);
 
       // Remove password from response
       const patientResponse = patient.toObject();
       delete patientResponse.password;
-
-      logger.info(`New patient created: ${patient._id}`);
       
       res.status(201).json({
         success: true,
@@ -35,6 +23,13 @@ export class PatientController {
         data: patientResponse
       });
     } catch (error) {
+      if (error instanceof Error && error.message === 'Patient with this email already exists') {
+        return res.status(400).json({
+          success: false,
+          message: error.message
+        });
+      }
+      
       logger.error('Error creating patient:', error);
       next(error);
     }
@@ -47,7 +42,7 @@ export class PatientController {
     try {
       const { id } = req.params;
       
-      const patient = await Patient.findById(id).select('-password');
+      const patient = await PatientService.getPatientById(id);
       if (!patient) {
         return res.status(404).json({
           success: false,
@@ -73,15 +68,7 @@ export class PatientController {
       const { id } = req.params;
       const updateData = req.body;
 
-      // Remove sensitive fields that shouldn't be updated via this endpoint
-      delete updateData.password;
-      delete updateData.email;
-
-      const patient = await Patient.findByIdAndUpdate(
-        id,
-        updateData,
-        { new: true, runValidators: true }
-      ).select('-password');
+      const patient = await PatientService.updatePatient(id, updateData);
 
       if (!patient) {
         return res.status(404).json({
@@ -108,27 +95,12 @@ export class PatientController {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const skip = (page - 1) * limit;
 
-      const patients = await Patient.find()
-        .select('-password')
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 });
-
-      const total = await Patient.countDocuments();
+      const result = await PatientService.getPatients(page, limit);
 
       res.json({
         success: true,
-        data: {
-          patients,
-          pagination: {
-            page,
-            limit,
-            total,
-            pages: Math.ceil(total / limit)
-          }
-        }
+        data: result
       });
     } catch (error) {
       logger.error('Error fetching patients:', error);
@@ -143,15 +115,13 @@ export class PatientController {
     try {
       const { id } = req.params;
 
-      const patient = await Patient.findByIdAndDelete(id);
-      if (!patient) {
+      const deleted = await PatientService.deletePatient(id);
+      if (!deleted) {
         return res.status(404).json({
           success: false,
           message: 'Patient not found'
         });
       }
-
-      logger.info(`Patient deleted: ${id}`);
 
       res.json({
         success: true,
@@ -159,6 +129,34 @@ export class PatientController {
       });
     } catch (error) {
       logger.error('Error deleting patient:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Search patients by name or email
+   */
+  static async searchPatients(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = req.query.q as string;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      if (!query) {
+        return res.status(400).json({
+          success: false,
+          message: 'Search query is required'
+        });
+      }
+
+      const result = await PatientService.searchPatients(query, page, limit);
+
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      logger.error('Error searching patients:', error);
       next(error);
     }
   }
