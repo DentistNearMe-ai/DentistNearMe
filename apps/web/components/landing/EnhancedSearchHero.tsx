@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { GooglePlacesAutocomplete } from './GooglePlacesAutocomplete';
+import { useSimpleTracking } from '../AnalyticsProvider';
 
 interface PlaceResult {
   place_id: string;
@@ -18,22 +19,22 @@ interface PlaceResult {
 }
 
 export function EnhancedSearchHero() {
-  const [selectedLocation, setSelectedLocation] = useState<PlaceResult | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const { track } = useSimpleTracking(); // Add this
 
-  const handleLocationSelect = (place: PlaceResult) => {
+  const handleLocationSelect = (place) => {
     setSelectedLocation(place);
+    track('address_selected'); // Simple event
     console.log('📍 Address selected:', place.formatted_address);
-    console.log('📊 Full location data:', place);
   };
 
   const handleSearch = () => {
     if (selectedLocation) {
+      track('search_dentists_clicked'); // Simple event
       console.log('🔍 Searching for dentists near:', selectedLocation.formatted_address);
-      // Here you would navigate to search results or trigger the search
       alert(`Searching for dentists near: ${selectedLocation.formatted_address}`);
     }
   };
-
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center">
       {/* Background Pattern */}
