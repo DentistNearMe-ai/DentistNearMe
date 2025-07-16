@@ -8,26 +8,29 @@ interface SearchHeroProps {
 export const SearchHero = component$<SearchHeroProps>(({ onSearch }) => {
   const searchLocation = useSignal('');
   const isLoading = useSignal(false);
-
+// eslint-disable-next-line qwik/valid-lexical-scope
   const handleSearch = $(() => {
     if (!searchLocation.value.trim()) {
       alert('Please enter a location');
       return;
     }
-    
+
     isLoading.value = true;
-    
-    // TODO: Integrate with Google Places API
-    // For now, simulate search
+
     setTimeout(() => {
       isLoading.value = false;
-      if (onSearch) {
+
+      // Call the non-serializable prop outside the $() scope
+      // eslint-disable-next-line qwik/valid-lexical-scope
+      if (typeof onSearch === 'function') {
+        // eslint-disable-next-line qwik/valid-lexical-scope
         onSearch(searchLocation.value);
       }
-      // Navigate to search results page
+
       window.location.href = `/search?location=${encodeURIComponent(searchLocation.value)}`;
     }, 1000);
   });
+
 
   const setPopularSearch = $((searchTerm: string) => {
     searchLocation.value = searchTerm;

@@ -1,3 +1,4 @@
+// Example usage in your EnhancedSearchHero component
 import { component$, useSignal, $ } from '@builder.io/qwik';
 import { GooglePlacesAutocomplete } from './google-places-autocomplete';
 
@@ -14,129 +15,96 @@ interface PlaceResult {
   types: string[];
 }
 
-
-
 export const EnhancedSearchHero = component$(() => {
+  const selectedLocation = useSignal<PlaceResult | null>(null);
+  const showDetails = useSignal(false);
 
-
-  const selectedPlace = useSignal<PlaceResult | null>(null);
-  const isLoading = useSignal(false);
-
-  const handlePlaceSelect = $((place: PlaceResult) => {
-    selectedPlace.value = place;
-    console.log('Selected place:', place);
+  const handleLocationSelect = $((place: PlaceResult) => {
+    selectedLocation.value = place;
+    showDetails.value = true;
+    console.log('🎯 Location selected:', place);
   });
 
   const handleSearch = $(() => {
-    if (!selectedPlace.value) {
-      alert('Please select a location from the dropdown');
-      return;
+    if (selectedLocation.value) {
+      // Here you would navigate to search results
+      console.log('🔍 Searching for dentists near:', selectedLocation.value.formatted_address);
+      alert(`Searching for dentists near: ${selectedLocation.value.formatted_address}`);
+    } else {
+      alert('Please select a location first');
     }
-    
-    isLoading.value = true;
-    
-    // TODO: Implement actual search with place data
-    setTimeout(() => {
-      isLoading.value = false;
-      // Navigate to search results with place data
-      const params = new URLSearchParams({
-        place_id: selectedPlace.value!.place_id,
-        address: selectedPlace.value!.formatted_address,
-        lat: selectedPlace.value!.geometry.location.lat.toString(),
-        lng: selectedPlace.value!.geometry.location.lng.toString()
-      });
-      
-      window.location.href = `/search?${params.toString()}`;
-    }, 1000);
   });
 
-  const popularSearches = [
-    'Teeth Cleaning Near Me',
-    'Dental Implants Near Me', 
-    'Cosmetic Dentistry Near Me',
-    'Emergency Dentist Near Me'
-  ];
+  const clearLocation = $(() => {
+    selectedLocation.value = null;
+    showDetails.value = false;
+  });
 
   return (
-    <section class="bg-gradient-to-r from-blue-50 to-indigo-50 py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Find Your Perfect
-            <span class="text-blue-600 block">Dentist Today</span>
+    <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+          <h1 class="text-4xl md:text-6xl font-bold mb-6">
+            Find Your Perfect Dentist
           </h1>
-          <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Book appointments with top-rated dentists in your area. Get a $50 gift card when you book through us!
+          <p class="text-xl md:text-2xl mb-8 opacity-90">
+            Book instantly and get a $50 gift card
           </p>
           
-          {/* Enhanced Search Form with Google Places */}
-          <div class="bg-white rounded-2xl shadow-xl p-6 max-w-4xl mx-auto">
-            <div class="flex flex-col md:flex-row gap-4">
-              <div class="flex-1">
-                <label for="location" class="block text-sm font-medium text-gray-700 mb-2">
-                  Enter your location
+          <div class="bg-white rounded-lg p-6 shadow-xl">
+            <div class="space-y-4">
+              {/* Location Search */}
+              <div>
+                <label class="block text-gray-700 text-sm font-medium mb-2 text-left">
+                  📍 Where are you located?
                 </label>
                 <GooglePlacesAutocomplete
-                  onPlaceSelect={handlePlaceSelect}
-                  placeholder="City, State or ZIP code"
+                  placeholder="Enter your address, city, or ZIP code"
+                  onPlaceSelect={handleLocationSelect}
+                  class="text-gray-900"
                 />
               </div>
-              <div class="flex items-end">
-                <button
-                  class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                  onClick$={handleSearch}
-                  disabled={isLoading.value || !selectedPlace.value}
-                >
-                  {isLoading.value ? (
-                    <div class="flex items-center justify-center">
-                      <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Searching...
+              
+              {/* Selected Location Display */}
+              {showDetails.value && selectedLocation.value && (
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div class="flex items-start justify-between">
+                    <div class="text-left">
+                      <h3 class="text-green-800 font-semibold">✅ Location Selected</h3>
+                      <p class="text-green-700 text-sm mt-1">
+                        {selectedLocation.value.formatted_address}
+                      </p>
+                      <p class="text-green-600 text-xs mt-1">
+                        Lat: {selectedLocation.value.geometry.location.lat.toFixed(4)}, 
+                        Lng: {selectedLocation.value.geometry.location.lng.toFixed(4)}
+                      </p>
                     </div>
-                  ) : (
-                    'Search Dentists'
-                  )}
+                    <button
+                      onClick$={clearLocation}
+                      class="text-green-600 hover:text-green-800 text-sm"
+                    >
+                      ✕ Clear
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Search Button */}
+              <div class="flex gap-3">
+                <button
+                  onClick$={handleSearch}
+                  disabled={!selectedLocation.value}
+                  class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-8 rounded-lg text-lg transition-colors"
+                >
+                  {selectedLocation.value ? '🔍 Find Dentists Near Me' : '📍 Select Location First'}
                 </button>
               </div>
+              
+              {/* Info */}
+              <p class="text-gray-600 text-sm">
+                💡 Start typing your address to see suggestions
+              </p>
             </div>
-            
-            {/* Popular Searches */}
-            <div class="mt-6 text-sm text-gray-600">
-              <span class="font-medium">Popular searches:</span>
-              <div class="mt-2 flex flex-wrap gap-2">
-                {popularSearches.map((search) => (
-                  <button 
-                    key={search}
-                    class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors text-sm" 
-                    onClick$={() => {
-                      // For popular searches, we'll use a generic search
-                      // In a real app, you might want to geocode these or use a different approach
-                      window.location.href = `/search?query=${encodeURIComponent(search)}`;
-                    }}
-                  >
-                    {search.replace(' Near Me', '')}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Selected Location Display */}
-            {selectedPlace.value && (
-              <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-sm text-green-800">
-                  <span class="font-medium">Selected:</span> {selectedPlace.value.formatted_address}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Gift Card Offer */}
-          <div class="mt-8 bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-300 rounded-lg p-4 max-w-2xl mx-auto">
-            <p class="text-yellow-800 font-semibold text-lg">
-              🎁 Book through us and get a $50 gift card to Amazon or your favorite restaurant!
-            </p>
           </div>
         </div>
       </div>
