@@ -30,9 +30,22 @@ export default function HomePage() {
       <Header />
       <EnhancedSearchHero />
       <HowItWorks />
-      <Features />
-      <TrustSection />
-      <CTASection />
+           <section id="features">
+        <Features />
+      </section>
+      
+      {/* Trust Section */}
+      <section id="trust-section">
+        <TrustSection />
+      </section>
+      
+      {/* CTA Section */}
+      <section id="cta-section">
+        <CTASection />
+      </section>
+
+
+
       <Footer />
     </div>
   );
