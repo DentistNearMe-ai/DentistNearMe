@@ -40,6 +40,28 @@ export class AdminController {
       // next(error);
     }
   }
+  static async updateAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const updatedAdmin = await AdminService.updateAdmin(id, updateData);
+      if (!updatedAdmin) {
+        return res.status(404).json({
+          success: false,
+          message: "Admin not found",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        updatedAdmin,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
   static async getAdmin(req: Request, res: Response, next: NextFunction) {
     try {
       const admin = await AdminService.getAdminById(req.params.id);
