@@ -1,4 +1,4 @@
-// src/components/landing/GooglePlacesAutocomplete.tsx
+// apps/web/components/landing/GooglePlacesAutocomplete.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -20,7 +20,6 @@ interface GooglePlacesAutocompleteProps {
   onPlaceSelect?: (place: PlaceResult) => void;
   placeholder?: string;
   className?: string;
-  value?: string;
   debounceMs?: number;
   minChars?: number;
 }
@@ -29,24 +28,25 @@ export function GooglePlacesAutocomplete({
   onPlaceSelect,
   placeholder = "Enter your location",
   className = "",
-  value = "",
   debounceMs = 300,
   minChars = 3
 }: GooglePlacesAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<any>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   
   const [state, setState] = useState({
     isLoaded: false,
     isLoading: false,
     error: null as string | null,
-    inputValue: value,
+    inputValue: '',
     isScriptLoaded: false,
     isSearching: false,
     searchCount: 0,
     needsSetup: false
   });
 
+  // Handle input changes without conflicts
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
     
@@ -126,14 +126,19 @@ export function GooglePlacesAutocomplete({
     try {
       const google = (window as any).google;
       
-      const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+      // Clear any existing autocomplete
+      if (autocompleteRef.current) {
+        google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      }
+      
+      autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
         types: ['address'],
         componentRestrictions: { country: 'us' },
         fields: ['place_id', 'formatted_address', 'geometry', 'name', 'types']
       });
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
+      autocompleteRef.current.addListener('place_changed', () => {
+        const place = autocompleteRef.current.getPlace();
         
         if (place.geometry?.location) {
           const placeResult: PlaceResult = {
@@ -149,12 +154,15 @@ export function GooglePlacesAutocomplete({
             types: place.types || []
           };
 
-          setState(prev => ({ 
-            ...prev, 
-            inputValue: place.formatted_address || '',
-            searchCount: prev.searchCount + 1,
-            isSearching: false
-          }));
+          // Update state AFTER Google Places API sets the value
+          setTimeout(() => {
+            setState(prev => ({ 
+              ...prev, 
+              inputValue: place.formatted_address || '',
+              searchCount: prev.searchCount + 1,
+              isSearching: false
+            }));
+          }, 100);
 
           if (onPlaceSelect) {
             onPlaceSelect(placeResult);
@@ -195,6 +203,10 @@ export function GooglePlacesAutocomplete({
     return () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
+      }
+      // Cleanup Google Maps listeners
+      if (autocompleteRef.current && (window as any).google?.maps?.event) {
+        (window as any).google.maps.event.clearInstanceListeners(autocompleteRef.current);
       }
     };
   }, []);

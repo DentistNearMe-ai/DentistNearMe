@@ -8,14 +8,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
-    optimizeCss: false, // Add this line to disable CSS optimization
-    turbo: {
-      rules: {
-        '*.tsx': {
-          loaders: ['@vercel/webpack-loader'],
-        },
-      },
-    },
+    optimizeCss: false, // Disable CSS optimization
   },
 };
 

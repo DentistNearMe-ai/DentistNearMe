@@ -27,12 +27,21 @@ export function EnhancedSearchHero() {
     track('address_selected'); // Simple event
     console.log('📍 Address selected:', place.formatted_address);
   };
+  
 
   const handleSearch = () => {
     if (selectedLocation) {
-      track('search_dentists_clicked'); // Simple event
-      console.log('🔍 Searching for dentists near:', selectedLocation.formatted_address);
-      alert(`Searching for dentists near: ${selectedLocation.formatted_address}`);
+      track('search_dentists_clicked');
+      
+      // Store location data and redirect to questionnaire
+      localStorage.setItem('searchLocation', JSON.stringify({
+        address: selectedLocation.formatted_address,
+        lat: selectedLocation.geometry.location.lat,
+        lng: selectedLocation.geometry.location.lng
+      }));
+      
+      // Navigate to questionnaire
+      window.location.href = '/questionnaire';
     }
   };
   return (
