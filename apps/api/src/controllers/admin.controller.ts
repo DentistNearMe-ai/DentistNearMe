@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AdminService } from "../services/admin.service";
-import logger from "../config/logger.config";
+
 import { IAdmin } from "../models";
 
 export class AdminController {
