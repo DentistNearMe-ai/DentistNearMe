@@ -1,14 +1,16 @@
-// components/admin/AdminDashboard.tsx
+// components/admin/AdminDashboardLayout.tsx
 'use client';
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { CreateDoctorForm } from './CreateDoctorForm';
-import { ViewDoctors } from './ViewDoctors';
+
+interface AdminDashboardLayoutProps {
+  children: React.ReactNode;
+}
 
 type TabType = 'create-doctor' | 'view-doctors';
 
-export function AdminDashboard() {
+export function AdminDashboardLayout({ children }: AdminDashboardLayoutProps) {
   const [activeTab, setActiveTab] = useState<TabType>('create-doctor');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -143,4 +145,13 @@ export function AdminDashboard() {
       </div>
     </div>
   );
+}
+
+// Placeholder components - will be created separately
+function CreateDoctorForm() {
+  return <div>Create Doctor Form Component</div>;
+}
+
+function ViewDoctors() {
+  return <div>View Doctors Component</div>;
 }

@@ -1,6 +1,6 @@
-// apps/web/app/admin/dashboard/page.tsx
+// app/admin/dashboard/page.tsx
 import { Metadata } from 'next';
-
+import { AdminDashboard } from '@/components/admin/AdminDashboard';
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard | DentalCare+',
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminDashboardPage() {
-  return <AdminDashboard/>;
+  return <AdminDashboard />;
 }
