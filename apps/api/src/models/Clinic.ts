@@ -1,81 +1,64 @@
+// apps/api/src/models/Clinic.ts
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IClinic extends Document {
   name: string;
   address: string;
-  phone?: string;
-  email?: string;
+  phone: string;
+  email: string;
   website?: string;
+  services: string[];
   
-  location?: {
-    type: 'Point';
-    coordinates: [number, number]; // [lng, lat]
-  };
-
-  hours?: {
-    monday?: string;
-    tuesday?: string;
-    wednesday?: string;
-    thursday?: string;
-    friday?: string;
-    saturday?: string;
-    sunday?: string;
-  };
-
-  services?: string[];
-  acceptedInsurance?: string[];
-
-  // Virtual field for doctors (populated when needed)
-  doctors?: mongoose.Types.ObjectId[];
-
   // Audit
   createdAt: Date;
   updatedAt: Date;
 }
 
 const ClinicSchema: Schema = new Schema({
-  name: { type: String, required: true },
-  address: { type: String, required: true },
-  phone: { type: String },
-  email: { type: String },
-  website: { type: String },
-
-  location: {
-    type: { type: String, enum: ['Point'], default: 'Point' },
-    coordinates: [Number] // [lng, lat]
+  name: { 
+    type: String, 
+    required: [true, 'Clinic name is required'],
+    trim: true
   },
-
-  hours: {
-    monday: String,
-    tuesday: String,
-    wednesday: String,
-    thursday: String,
-    friday: String,
-    saturday: String,
-    sunday: String
+  address: { 
+    type: String, 
+    required: [true, 'Address is required'],
+    trim: true
   },
-
-  services: [String],
-  acceptedInsurance: [String],
+  phone: { 
+    type: String, 
+    required: [true, 'Phone number is required'],
+    trim: true
+  },
+  email: { 
+    type: String, 
+    required: [true, 'Email is required'],
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  website: { 
+    type: String,
+    trim: true
+  },
+  services: {
+    type: [String],
+    required: [true, 'At least one service is required'],
+    validate: {
+      validator: function(services: string[]) {
+        return services && services.length > 0;
+      },
+      message: 'At least one service must be selected'
+    }
+  },
 
   // Audit
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Geospatial index for location searches
-ClinicSchema.index({ location: '2dsphere' });
-
-// Virtual field to get all doctors for this clinic
-ClinicSchema.virtual('doctors', {
-  ref: 'Doctor',
-  localField: '_id',
-  foreignField: 'clinic'
-});
-
-// Ensure virtual fields are serialized
-ClinicSchema.set('toJSON', { virtuals: true });
-ClinicSchema.set('toObject', { virtuals: true });
+// Index for email uniqueness
+ClinicSchema.index({ email: 1 }, { unique: true });
 
 // Auto-update updatedAt
 ClinicSchema.pre('save', function(next) {
@@ -84,3 +67,4 @@ ClinicSchema.pre('save', function(next) {
 });
 
 export default mongoose.model<IClinic>('Clinic', ClinicSchema);
+

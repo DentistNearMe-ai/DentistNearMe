@@ -1,4 +1,4 @@
-// apps/api/src/controllers/clinic.controller.ts
+// Updated Clinic Controller - apps/api/src/controllers/clinic.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import { ClinicService } from '../services/clinic.service';
 import logger from '../config/logger.config';
@@ -12,6 +12,21 @@ export class ClinicController {
     try {
       const clinicData: Partial<IClinic> = req.body;
       
+      // Validate required fields
+      if (!clinicData.name || !clinicData.address || !clinicData.phone || !clinicData.email) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required fields: name, address, phone, email'
+        });
+      }
+
+      if (!clinicData.services || clinicData.services.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'At least one service must be selected'
+        });
+      }
+      
       const clinic = await ClinicService.createClinic(clinicData);
       
       res.status(201).json({
@@ -20,7 +35,7 @@ export class ClinicController {
         data: clinic
       });
     } catch (error) {
-      if (error instanceof Error && error.message === 'Clinic with this email already exists') {
+      if (error instanceof Error && error.message.includes('already exists')) {
         return res.status(400).json({
           success: false,
           message: error.message
@@ -58,22 +73,15 @@ export class ClinicController {
   }
 
   /**
-   * Get all clinics with filters and pagination
+   * Get all clinics with pagination
    */
   static async getClinics(req: Request, res: Response, next: NextFunction) {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const search = req.query.search as string;
-      const city = req.query.city as string;
-      const state = req.query.state as string;
 
-      const filters = {
-        search,
-        city,
-        state
-      };
-
+      const filters = { search };
       const result = await ClinicService.getClinics(page, limit, filters);
 
       res.json({
@@ -135,107 +143,6 @@ export class ClinicController {
       });
     } catch (error) {
       logger.error('Error deleting clinic:', error);
-      next(error);
-    }
-  }
-
-  /**
-   * Search clinics by location
-   */
-  static async searchClinics(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { 
-        location, 
-        latitude, 
-        longitude, 
-        radius = 10,
-        services,
-        page = 1,
-        limit = 10 
-      } = req.query;
-
-      const searchParams = {
-        location: location as string,
-        latitude: latitude ? parseFloat(latitude as string) : undefined,
-        longitude: longitude ? parseFloat(longitude as string) : undefined,
-        radius: parseInt(radius as string),
-        services: services as string,
-        page: parseInt(page as string),
-        limit: parseInt(limit as string)
-      };
-
-      const result = await ClinicService.searchClinics(searchParams);
-
-      res.json({
-        success: true,
-        data: result
-      });
-    } catch (error) {
-      logger.error('Error searching clinics:', error);
-      next(error);
-    }
-  }
-
-  /**
-   * Get clinic statistics (Admin only)
-   */
-  static async getClinicStats(req: Request, res: Response, next: NextFunction) {
-    try {
-      const stats = await ClinicService.getClinicStats();
-
-      res.json({
-        success: true,
-        data: stats
-      });
-    } catch (error) {
-      logger.error('Error fetching clinic stats:', error);
-      next(error);
-    }
-  }
-
-  /**
-   * Get clinics with their doctors
-   */
-  static async getClinicsWithDoctors(req: Request, res: Response, next: NextFunction) {
-    try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
-
-      const result = await ClinicService.getClinicsWithDoctors(page, limit);
-
-      res.json({
-        success: true,
-        data: result
-      });
-    } catch (error) {
-      logger.error('Error fetching clinics with doctors:', error);
-      next(error);
-    }
-  }
-
-  /**
-   * Bulk update clinics (Admin only)
-   */
-  static async bulkUpdateClinics(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { clinicIds, updateData } = req.body;
-
-      if (!Array.isArray(clinicIds) || clinicIds.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Clinic IDs array is required'
-        });
-      }
-
-      const result = await ClinicService.bulkUpdateClinics(clinicIds, updateData);
-
-      res.json({
-        success: true,
-        message: 'Clinics updated successfully',
-        data: result
-      });
-    } catch (error) {
-      logger.error('Error bulk updating clinics:', error);
       next(error);
     }
   }
