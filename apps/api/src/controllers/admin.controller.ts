@@ -1,10 +1,10 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { AdminService } from "../services/admin.service";
 
 import { IAdmin } from "../models";
 
 export class AdminController {
-  static async createAdmin(req: Request, res: Response, next: NextFunction) {
+  static async createAdmin(req: Request, res: Response, ) {
     try {
       const adminData: Partial<IAdmin> = req.body;
       const admin = await AdminService.createAdmin(adminData);
@@ -21,7 +21,7 @@ export class AdminController {
       // next(error);
     }
   }
-  static async loginAdmin(req: Request, res: Response, next: NextFunction) {
+  static async loginAdmin(req: Request, res: Response, ) {
     try {
       const token = await AdminService.loginAdmin(
         req.body.email,
@@ -40,7 +40,7 @@ export class AdminController {
       // next(error);
     }
   }
-  static async updateAdmin(req: Request, res: Response, next: NextFunction) {
+  static async updateAdmin(req: Request, res: Response, ) {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -62,7 +62,7 @@ export class AdminController {
       });
     }
   }
-  static async getAdmin(req: Request, res: Response, next: NextFunction) {
+  static async getAdmin(req: Request, res: Response, ) {
     try {
       const admin = await AdminService.getAdminById(req.params.id);
       res.status(200).json({

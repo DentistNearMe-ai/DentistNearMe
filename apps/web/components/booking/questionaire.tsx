@@ -1,4 +1,6 @@
+'use client'
 import React, { useState } from 'react';
+
 
 const DentalQuestionnaire = () => {
   const [currentStep, setCurrentStep] = useState(1);
