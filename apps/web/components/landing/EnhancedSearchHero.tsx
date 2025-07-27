@@ -29,6 +29,7 @@ export function EnhancedSearchHero() {
   };
   
 
+
   const handleSearch = () => {
     if (selectedLocation) {
       track('search_dentists_clicked');
@@ -41,7 +42,8 @@ export function EnhancedSearchHero() {
       }));
       
       // Navigate to questionnaire
-      window.location.href = '/questionnaire';
+
+      window.location.href = '/results';
     }
   };
   return (
