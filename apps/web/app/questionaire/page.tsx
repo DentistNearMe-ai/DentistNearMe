@@ -11,10 +11,7 @@ export default function QuestionnairePage() {
   return (
     <div className="min-h-screen">
       <DentalQuestionnaire
-        onComplete={(data) => {
-          console.log('Questionnaire completed:', data);
-          // Handle completion - redirect to results, save to database, etc.
-        }}
+       
       />
     </div>
   );
