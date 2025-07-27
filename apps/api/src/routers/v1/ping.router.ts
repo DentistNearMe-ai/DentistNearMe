@@ -1,11 +1,15 @@
+
 import express from 'express';
 import { pingHandler } from '../../controllers/ping.controller';
-import {  validateRequestBody } from '../../validators';
-import { pingSchema } from '../../validators/ping.validator';
+
 
 const pingRouter = express.Router();
 
-pingRouter.get('/', validateRequestBody(pingSchema), pingHandler); // TODO: Resolve this TS compilation issue
+// For GET requests, we don't need body validation
+pingRouter.get('/', pingHandler);
+
+// If you want body validation for POST requests, use this instead:
+// pingRouter.post('/', validateRequestBody(pingSchema), pingHandler);
 
 pingRouter.get('/health', (req, res) => {
     res.status(200).send('OK');

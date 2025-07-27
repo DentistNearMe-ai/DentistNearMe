@@ -1,4 +1,3 @@
-// Updated Clinic Controller - apps/api/src/controllers/clinic.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import { ClinicService } from '../services/clinic.service';
 import logger from '../config/logger.config';
@@ -8,23 +7,25 @@ export class ClinicController {
   /**
    * Create a new clinic (Admin only)
    */
-  static async createClinic(req: Request, res: Response, next: NextFunction) {
+  static async createClinic(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const clinicData: Partial<IClinic> = req.body;
       
       // Validate required fields
       if (!clinicData.name || !clinicData.address || !clinicData.phone || !clinicData.email) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'Missing required fields: name, address, phone, email'
         });
+        return;
       }
 
       if (!clinicData.services || clinicData.services.length === 0) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'At least one service must be selected'
         });
+        return;
       }
       
       const clinic = await ClinicService.createClinic(clinicData);
@@ -36,10 +37,11 @@ export class ClinicController {
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('already exists')) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: error.message
         });
+        return;
       }
       
       logger.error('Error creating clinic:', error);
@@ -50,16 +52,17 @@ export class ClinicController {
   /**
    * Get clinic by ID
    */
-  static async getClinic(req: Request, res: Response, next: NextFunction) {
+  static async getClinic(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
       
       const clinic = await ClinicService.getClinicById(id);
       if (!clinic) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Clinic not found'
         });
+        return;
       }
 
       res.json({
@@ -75,7 +78,7 @@ export class ClinicController {
   /**
    * Get all clinics with pagination
    */
-  static async getClinics(req: Request, res: Response, next: NextFunction) {
+  static async getClinics(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -97,7 +100,7 @@ export class ClinicController {
   /**
    * Update clinic
    */
-  static async updateClinic(req: Request, res: Response, next: NextFunction) {
+  static async updateClinic(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -105,10 +108,11 @@ export class ClinicController {
       const clinic = await ClinicService.updateClinic(id, updateData);
 
       if (!clinic) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Clinic not found'
         });
+        return;
       }
 
       res.json({
@@ -125,16 +129,17 @@ export class ClinicController {
   /**
    * Delete clinic
    */
-  static async deleteClinic(req: Request, res: Response, next: NextFunction) {
+  static async deleteClinic(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
       const deleted = await ClinicService.deleteClinic(id);
       if (!deleted) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Clinic not found'
         });
+        return;
       }
 
       res.json({

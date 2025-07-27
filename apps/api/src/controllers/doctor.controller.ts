@@ -1,5 +1,3 @@
-
-// Updated Doctor Controller - apps/api/src/controllers/doctor.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import { DoctorService } from '../services/doctor.service';
 import logger from '../config/logger.config';
@@ -9,30 +7,33 @@ export class DoctorController {
   /**
    * Create a new doctor (Admin only)
    */
-  static async createDoctor(req: Request, res: Response, next: NextFunction) {
+  static async createDoctor(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const doctorData: Partial<IDoctor> = req.body;
       
       // Validate required fields
       if (!doctorData.name || !doctorData.email || !doctorData.phone || !doctorData.password) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'Missing required fields: name, email, phone, password'
         });
+        return;
       }
 
       if (!doctorData.clinic) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'Clinic selection is required'
         });
+        return;
       }
 
       if (!doctorData.specialties || doctorData.specialties.length === 0) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'At least one specialty must be selected'
         });
+        return;
       }
       
       const doctor = await DoctorService.createDoctor(doctorData);
@@ -48,10 +49,11 @@ export class DoctorController {
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('already exists')) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: error.message
         });
+        return;
       }
       
       logger.error('Error creating doctor:', error);
@@ -62,16 +64,17 @@ export class DoctorController {
   /**
    * Get doctor by ID
    */
-  static async getDoctor(req: Request, res: Response, next: NextFunction) {
+  static async getDoctor(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
       
       const doctor = await DoctorService.getDoctorById(id);
       if (!doctor) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Doctor not found'
         });
+        return;
       }
 
       res.json({
@@ -87,7 +90,7 @@ export class DoctorController {
   /**
    * Get all doctors with pagination
    */
-  static async getDoctors(req: Request, res: Response, next: NextFunction) {
+  static async getDoctors(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -111,7 +114,7 @@ export class DoctorController {
   /**
    * Update doctor
    */
-  static async updateDoctor(req: Request, res: Response, next: NextFunction) {
+  static async updateDoctor(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -119,10 +122,11 @@ export class DoctorController {
       const doctor = await DoctorService.updateDoctor(id, updateData);
 
       if (!doctor) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Doctor not found'
         });
+        return;
       }
 
       res.json({
@@ -139,21 +143,26 @@ export class DoctorController {
   /**
    * Delete doctor
    */
-  static async deleteDoctor(req: Request, res: Response, next: NextFunction) {
+  static async deleteDoctor(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
       const deleted = await DoctorService.deleteDoctor(id);
       if (!deleted) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Doctor not found'
-        })
+        });
+        return;
       }
-    } catch(err){
-      console.log(err)
 
+      res.json({
+        success: true,
+        message: 'Doctor deleted successfully'
+      });
+    } catch (error) {
+      logger.error('Error deleting doctor:', error);
+      next(error);
     }
   }
-
 }
