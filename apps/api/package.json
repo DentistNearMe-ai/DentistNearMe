@@ -1,20 +1,11 @@
 {
-  "name": "Backend",
-    "type": "module",
+  "name": "expresstypescripttemplate",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "ts-node src/server.ts",
     "dev": "nodemon src/server.ts",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "docker:build": "docker build -t dentist-api .",
-    "docker:run": "docker run -p 3001:3001 dentist-api",
-    "docker:compose": "docker-compose up -d",
-    "docker:compose:build": "docker-compose up -d --build",
-    "docker:logs": "docker-compose logs -f api",
-    "docker:stop": "docker-compose down",
-    "deploy:prod": "NODE_ENV=production npm run build && npm start"
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -32,13 +23,16 @@
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
     "zod": "^3.24.2"
+    
   },
   "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.14.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
+
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^22.14.0",
+
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
